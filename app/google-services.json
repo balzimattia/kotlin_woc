@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "988801913759",
+    "project_id": "progetto-prog-mobile-woc",
+    "storage_bucket": "progetto-prog-mobile-woc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:988801913759:android:9efd20de52d1cfdfdf63aa",
+        "android_client_info": {
+          "package_name": "com.example.progettowoc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1o_C3rZKot4jgZ0PbTtQcqQ5S_z65oiQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
