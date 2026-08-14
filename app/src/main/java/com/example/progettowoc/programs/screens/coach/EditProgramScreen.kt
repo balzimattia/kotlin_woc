@@ -8,8 +8,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
@@ -87,12 +90,16 @@ import com.example.progettowoc.ui.theme.Blue
 import com.example.progettowoc.ui.theme.LightGreen
 import com.example.progettowoc.ui.theme.ProgettoWOCTheme
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import com.example.progettowoc.R
 import com.example.progettowoc.programs.viewmodels.CoachProgramViewModel
 import com.example.progettowoc.ui.theme.Red
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
+import androidx.compose.ui.unit.IntSize
 
 
 @Composable
@@ -693,58 +700,70 @@ private fun ExerciseNumberField(
 
 @Composable
 fun ExampleImageDialog(onDismiss: () -> Unit) {
-
-    var scale by remember { mutableFloatStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset.Zero) }
-
-    val state = rememberTransformableState { zoomChange, panChange, _ ->
-        scale = (scale * zoomChange).coerceIn(1f, 5f)
-        if (scale == 1f) {
-            offset = Offset.Zero
-        } else {
-            val maxX = (scale - 1f) * 500f
-            val maxY = (scale - 1f) * 500f
-            offset = Offset(
-                x = (offset.x + panChange.x).coerceIn(-maxX, maxX),
-                y = (offset.y + panChange.y).coerceIn(-maxY, maxY)
-            )
-        }
-    }
-
-    Dialog(onDismissRequest = onDismiss) {
-
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Box(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f)),
             contentAlignment = Alignment.Center
         ) {
-
-            Image(
+            ZoomableImage(
                 painter = painterResource(R.drawable.example_sheet),
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .graphicsLayer {
-                        scaleX = scale
-                        scaleY = scale
-                        translationX = offset.x
-                        translationY = offset.y
-                    }
-                    .transformable(state)
+                modifier = Modifier.fillMaxSize()
             )
 
             IconButton(
                 onClick = onDismiss,
-                modifier = Modifier.align(Alignment.TopEnd)
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
             ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = null,
-                    tint = Color.White
-                )
+                Icon(Icons.Default.Close, contentDescription = null, tint = Color.White)
             }
         }
     }
+}
+
+@Composable
+fun ZoomableImage(painter: Painter, modifier: Modifier = Modifier) {
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    var containerSize by remember { mutableStateOf(IntSize.Zero) }
+
+    Image(
+        painter = painter,
+        contentDescription = null,
+        contentScale = ContentScale.Fit,
+        modifier = modifier
+            .onSizeChanged { containerSize = it }
+            .pointerInput(Unit) {
+                detectTransformGestures(panZoomLock = false) { _, pan, zoom, _ ->
+                    val newScale = (scale * zoom).coerceIn(1f, 5f)
+
+                    val maxX = (containerSize.width * (newScale - 1f)) / 2f
+                    val maxY = (containerSize.height * (newScale - 1f)) / 2f
+
+                    offset = if (newScale <= 1f) {
+                        Offset.Zero
+                    } else {
+                        Offset(
+                            x = (offset.x + pan.x * newScale).coerceIn(-maxX, maxX),
+                            y = (offset.y + pan.y * newScale).coerceIn(-maxY, maxY)
+                        )
+                    }
+                    scale = newScale
+                }
+            }
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+                translationX = offset.x
+                translationY = offset.y
+            }
+    )
 }
 
 
