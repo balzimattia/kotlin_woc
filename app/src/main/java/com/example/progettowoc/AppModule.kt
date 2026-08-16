@@ -38,6 +38,14 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideNetworkObserver(
+        @ApplicationContext context: Context
+    ): NetworkObserver {
+        return NetworkObserver(context = context)
+    }
+
+    @Singleton
+    @Provides
     fun provideAuthRepository(
         supabase: SupabaseClient,
         @ApplicationContext context: Context

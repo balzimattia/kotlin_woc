@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
-class NetworkObserver(private val context: Context) {
+class NetworkObserver @Inject constructor(private val context: Context) {
 
     private val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
