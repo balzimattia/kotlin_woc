@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -13,8 +14,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
+import javax.inject.Singleton
 
-class NetworkObserver @Inject constructor(private val context: Context) {
+@Singleton
+class NetworkObserver @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     private val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 

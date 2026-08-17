@@ -37,15 +37,18 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.progettowoc.auth.viewmodels.AuthViewModel
 import com.example.progettowoc.notifications.NotificationChannels
 import com.example.progettowoc.users.viewmodels.SettingsViewModel
+import dagger.Provides
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jan.supabase.auth.status.SessionStatus
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
-    private val networkObserver by lazy { NetworkObserver(this) }
+    @Inject
+    lateinit var networkObserver:NetworkObserver
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,7 +77,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            MyApp()
+            MyApp(networkObserver = networkObserver)
         }
     }
 }
@@ -96,7 +99,7 @@ private fun NotificationPermission() {
 
 
 @Composable
-private fun MyApp() {
+private fun MyApp(networkObserver: NetworkObserver) {
     val settingsViewModel: SettingsViewModel = hiltViewModel()
     val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
 
@@ -104,7 +107,7 @@ private fun MyApp() {
 
         NotificationPermission()
 
-        AppScreen()
+        AppScreen(networkObserver = networkObserver)
     }
 }
 

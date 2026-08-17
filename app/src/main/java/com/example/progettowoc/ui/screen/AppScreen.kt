@@ -1,6 +1,7 @@
 package com.example.progettowoc.ui.screen
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -77,12 +78,14 @@ import io.github.jan.supabase.auth.status.SessionStatus
 @Composable
 fun AppScreen(
     authViewModel: AuthViewModel = hiltViewModel(),
-    notificationViewModel: NotificationViewModel = hiltViewModel()
+    notificationViewModel: NotificationViewModel = hiltViewModel(),
+    networkObserver: NetworkObserver
 ) {
     val navController = rememberNavController()
     val sessionStatus by authViewModel.sessionStatus.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
     val notifications by notificationViewModel.notifications.collectAsState()
+    val isConnected by networkObserver.isConnected.collectAsState()
 
     val isLoadingUser = sessionStatus is SessionStatus.Authenticated && currentUser == null
 
@@ -94,24 +97,13 @@ fun AppScreen(
         }
     }
 
-    val context = LocalContext.current
-    val networkObserver = remember { NetworkObserver(context) }
-    val isConnected by networkObserver.isConnected.collectAsState()
-
     AppContent(
         currentUser = currentUser,
         navController = navController,
         hasNotification = notifications.isNotEmpty(),
         content = { innerPadding ->
-            when {
-                !isConnected -> {
-                    NoWiFiContent(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
-                    )
-                }
-                isLoadingUser -> {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (isLoadingUser) {
                     Box(
                         modifier = Modifier
                             .padding(innerPadding)
@@ -120,14 +112,22 @@ fun AppScreen(
                     ) {
                         CircularProgressIndicator()
                     }
-                }
-                else -> {
+                } else {
                     AppNavHost(
                         navController = navController,
                         notificationViewModel = notificationViewModel,
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize()
+                    )
+                }
+
+                if (!isConnected) {
+                    NoWiFiContent(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
                     )
                 }
             }
